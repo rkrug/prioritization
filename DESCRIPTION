@@ -1,0 +1,10 @@
+Package: prioritization
+Type: Package
+Title: Spatial Prioritization routines
+Version: 0.0-1
+Date: 2013-05-16_15-46
+Author: Rainer M. Krug
+Maintainer: Rainer M Krug <Rainer@krugs.de>
+Description: Routines for spatial prioritization for alien clearing
+License: GPL-3
+LazyLoad: yes

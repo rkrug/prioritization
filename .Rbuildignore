@@ -1,0 +1,7 @@
+.git
+^.*\\.org$
+^prioritization.
+.gitignore
+library
+version
+postTangleScript.sh

@@ -1,0 +1,10 @@
+*#prioritization.*
+prioritization.*
+!prioritization.org*
+*.o
+*.so
+*.rds
+.#*
+#*
+*#
+*~
