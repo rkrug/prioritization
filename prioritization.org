@@ -99,9 +99,14 @@ Org-babel support for building
   sed -i '' s/PATCHVERSION/$PATCHVERSION/ ./prioritization-package.R
   sed -i '' s/TODAYSDATE/`date +%Y-%m-%d_%H-%M`/ ./prioritization-package.R
 
-  Rscript -e "library(roxygen2);roxygenize('pkg', roxygen.dir='pkg', copy.package=FALSE, unlink.target=FALSE)"
+  Rscript -e "library(roxygen2);roxygenize('./', copy.package=FALSE, unlink.target=FALSE)"
   rm -f ./postTangleScript.sh
 #+end_src
+
+#+RESULTS:
+: Updating collate directive in  /Users/rainerkrug/Documents/Projects/R-Packages/prioritization/DESCRIPTION 
+: Updating namespace directives
+: Writing prioCellByValuesGRASS.Rd
 
 
 * gitignore file (./.gitignore)
@@ -113,16 +118,17 @@ Org-babel support for building
 :padline: no
 :END: 
 #+begin_src gitignore
-  *#prioritization.*
-  prioritization.*
-  !prioritization.org*
-  *.o
-  *.so
-  *.rds
-  .#*
-  #*
-  *#
-  *~
+,,*#prioritization.*
+prioritization.*
+!prioritization.org*
+,,*.o
+,,*.so
+,,*.rds
+.#*
+#*
+,,*#
+,,*~
+/.*
 #+end_src
 
 * Git Revision info
@@ -165,23 +171,6 @@ Complete version info
 
 
 
-* Package description
-#+begin_src R :eval nil :tangle ./prioritization-package.R :shebang :padline no :no-expand :comments no
-  ##' Routines for spatial prioritization for alien clearing
-  ##' 
-  ##' \tabular{ll}{
-  ##' Package: \tab prioritization\cr
-  ##' Type: \tab Package\cr
-  ##' Version: \tab MAJORVERSION.MINORVERSION.PATCHVERSION\cr
-  ##' Date: \tab TODAYSDATE\cr
-  ##' License: \tab GPL (>= 2)\cr
-  ##' LazyLoad: \tab yes\cr
-  ##' }
-  ##'
-  ##' @docType package
-  ##' @author Rainer M Krug \email{Rainer@@krugs.de}
-  NULL
-#+end_src
 
 * Package Files
 ** DESCRIPTION
@@ -192,16 +181,17 @@ Complete version info
 :comments: no
 :END:
 #+begin_src fundamental
-  Package: prioritization
-  Type: Package
-  Title: Spatial Prioritization routines
-  Version: MAJORVERSION.MINORVERSION-PATCHVERSION
-  Date: TODAYSDATE
-  Author: Rainer M. Krug
-  Maintainer: Rainer M Krug <Rainer@krugs.de>
-  Description: Routines for spatial prioritization for alien clearing
-  License: GPL-3
-  LazyLoad: yes
+Package: prioritization
+Type: Package
+Title: Spatial Prioritization routines
+Version: MAJORVERSION.MINORVERSION-PATCHVERSION
+Date: TODAYSDATE
+Author: Rainer M. Krug
+Maintainer: Rainer M Krug <Rainer@krugs.de>
+Description: Routines for spatial prioritization for alien clearing
+Depends: spgrass6
+License: GPL-3
+LazyLoad: yes
 #+end_src
 
 ** NAMESPACE
@@ -212,262 +202,376 @@ Complete version info
 :comments: no
 :END:
 #+begin_src R
-  # useDynLib(prioritization)
-  exportPattern("^[[:alpha:]]+")
+## useDynLib(prioritization)
+exportPattern("^[[:alpha:]]+")
 #+end_src
 
 #+results:
 
+** Package description (./R/package.R)
+:PROPERTIES:
+:tangle:   ./R/package.R
+:eval: nil
+:no-expand: TRUE
+:comments: no
+:END:
+#+begin_src R
+##' Routines for spatial prioritization for alien clearing
+##'
+##' This package is a collection of different spatial prioritization
+##' routines to prioritize areas spatially
+##' 
+##' \tabular{ll}{
+##' Package: \tab prioritization\cr
+##' Type: \tab Package\cr
+##' Version: \tab MAJORVERSION.MINORVERSION.PATCHVERSION\cr
+##' Date: \tab TODAYSDATE\cr
+##' License: \tab GPL (>= 2)\cr
+##' LazyLoad: \tab yes\cr
+##' }
+##'
+##' @name prioritization-package
+##' @docType package
+##' @author Rainer M Krug \email{Rainer@@krugs.de}
+NULL
+#+end_src
+
 
 * R directory (./R)
 
-** prioCellRandom
+** CHECK prioCellRandomGRASS
 Needs to be tested!!!
 :PROPERTIES:
-:tangle:   ./R/prioCellRandom.R
+:tangle:   ./R/prioCellRandomGRASS.R
 :comments: yes
 :no-expand: TRUE
 :END:
 #+begin_src R
-  ##' Random prioritization of raster cells
-  ##'
-  ##' Cells will be randmly prioritized by assigning a random value [0, 1) for each cell.
-  ##' @title Random prioritization of raster cells
-  ##' @param inputLayerName name of layer for which the prioritization should be done.
-  ##'                       NA:  cell will not be prioritized
-  ##'                       !NA: cell will be prioritized
-  ##' @param outputLayerName name of output layer with prioritization (0..1)
-  ##' 
-  ##' @return invisible outputLayerName
-  ##' @author Dr Rainer M Krug
-  prioCellRandom <- function(
-      inputLayerName,
-      outputLayerName) {
-      prio <- readRAST6( inputLayer )
-      inds <- which(!is.na(prio[[1]]))
-      prio[[1]][inds] <- runif(inds)
-      ## prio@proj4string <- parameter$proj4string
-      writeRAST6(
-          prio,
-          outputLayer, # layerName(list(layer="all"),  type="prioStand",  parameter$year)
-          1,
-          overwrite = TRUE
-          )
-      invisible(outputLayerName)
-  }
-  
-#+end_src
-
-** TODO prioCellAHPSingle
-Needs to be tested!!!
-:PROPERTIES:
-:tangle:   ./R/prioCellAHPSingle.R
-:comments: yes
-:no-expand: TRUE
-:END:
-#+begin_src R
-  ##' Prioritization based on rules from AHP
-  ##'
-  ##' Prioritization based on an integer input layer, reclass rules and a final weight
-  ##' @title 
-  ##' @param inputLayerName name of layer to be prioritized
-  ##' @param outputLayerName name of output layer containing the priority values 
-  ##' @param grassReclassRules reclass rules as described in the r.reclass help (GRASS)
-  ##'                          The values have to be integer values!
-  ##' @param oneEquals value specifying which of the integer values will equal to one.
-  ##'                  All values will be divided by this value.
-  ##' @param weight final weight of the resulting prioritization.
-  ##'               All values will be multiplied by this value
-  ##' @return invisible outputLayerName
-  ##' @author Dr Rainer M Krug
-  prioCellAHPSingle <- function(
-      inputLayerName,
-      outputLayerName,
-      grassReclassRules,
-      grassRecodeRules,
-      oneEquals = 1000,
-      weight
-      ) {
-      if (!missing(grassReclassRules) & !missing(grassRecodeRules)) {
-          stop("Only 'grassReclassRules' or 'grassRecodeRules' can be specified!")
-      }
-      if (missing(grassReclassRules) & missing(grassRecodeRules)) {
-          stop("One of 'grassReclassRules' or 'grassRecodeRules' has to be specified specified!")
-      }
-      op <- options()
-      options(warn=-1)
-      execGRASS(
-          "g.remove",
-          rast = outputLayerName
-          )
-      options(op)
-      if (!missing(grassReclassRules)) {
-          execGRASS(
-              "r.reclass",
-              input = inputLayerName,
-              output = outputLayerName,
-              rules = "-",
-              flags = "overwrite",
-              Sys_input = grassReclassRules
-              )
-      } else {
-          execGRASS(
-              "r.recode",
-              input = inputLayerName,
-              output = outputLayerName,
-              rules = "-",
-              flags = "overwrite",
-              Sys_input = grassRecodeRules
-              )
-          oneEquals <- 1
-      }   
-      execGRASS(
-          "r.mapcalc",
-          expression = paste(outputLayerName, "=", "float(", outputLayerName, " / ", oneEquals * weight, ")") ,
-          flags = "overwrite"
-          )
-      invisible(outputLayerName)
-  }
-#+end_src
-
-#+RESULTS:
-
-** TODO prioCellByValues
-Needs to be tested!!!
-:PROPERTIES:
-:tangle:   ./R/prioCellByValues.R
-:comments: yes
-:no-expand: TRUE
-:END:
-#+begin_src R
-  ##' Prioritization based on years
-  ##'
-  ##' Prioritization based on values specified and layer containing values. If cell contains a value listed in "values"
-  ##' the priority value of this cell will be prioValues[1], otherwise prioValues[2]
-  ##' 
-  ##' @title 
-  ##' @param yearLayerName name of layer containing years
-  ##' @param outputLayerName name of output layer containing the priority values 
-  ##' @param values values which should get priority value prioValues[1]
-  ##' @param prioValues priority values, first one for in years, second one not
-  ##' @param oneEquals value specifying which integer values will equal to one.
-  ##'                  All values will be divided by this value.
-  ##' @param weight final weight of the resulting prioritization.
-  ##'               All values will be multiplied by this value
-  ##' @return invisible outputLayerName
-  ##' @author Dr Rainer M Krug
-  prioCellByValues <- function(
-    yearLayerName,
-    outputLayerName,
-    values,
-    prioValues,
-    oneEquals = 100, 
-    weight
+##' Random prioritization of raster cells
+##'
+##' This function assignes randomly each cell a priority, i.e. a
+##' value, between 0 and 1.
+##'
+##' This function is a wrapper aroung the function
+##' \code{r.surf.random} with \code{MASK} used as the GRASS MASK for
+##' the calculations.
+##'
+##' The function \bold{does not} respect the GRASS MASK as it uses the
+##' parameter \code{MASK} as the MASK for the calculations.
+##'
+##' @usage prioCellRandomGRASS( output, MASK = NULL, overwrite = FALSE )
+##' @name prioCellRandomGRASS
+##' @title Random prioritization of raster cells
+##' 
+##' @param output name of output layer with prioritization
+##' (0..1)
+##' @param MASK name of the GRASS raster layer which will be used as
+##' MASK. If it is \code{NULL}, the default, the existing MASK will be
+##' used.
+##' @param overwrite if \code{TRUE}, the output layer will be overwritten
+##'
+##' @return invisible outputLayerName
+##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+prioCellRandomGRASS <- function(
+    output,
+    MASK = NULL,
+    overwrite = FALSE
     ) {
+    if (!is.null(MASK)) {
+        execGRASS(
+            "g.rename",
+            rast = paste("MASK", "MASK.BAK", sep=",")
+            )
+        execGRASS(
+            "g.rename",
+            rast = paste(MASK, "MASK", sep=",")
+            )
+    }
+    try(
+        {
+            if (overwrite) {
+                flags <- "overwrite"
+            } else {
+                flags <- NULL
+            }
+            execGRASS(
+                "r.surf.random",
+                output = output,
+                min = 0,
+                max = 1,
+                flags = flags
+                )
+        }
+        )
+    if (!is.null(MASK)) {
+        execGRASS(
+            "g.rename",
+            rast = paste("MASK", MASK, sep=",")
+            )
+         execGRASS(
+            "g.rename",
+            rast = paste("MASK.BAK", "MASK", sep=",")
+            )
+    }
+    invisible(output)
+}
+
+#+end_src
+
+** CHECK prioCellAHPSingleGRASS
+Needs to be tested!!!
+:PROPERTIES:
+:tangle:   ./R/prioCellAHPSingleGRASS.R
+:comments: yes
+:no-expand: TRUE
+:END:
+#+begin_src R
+##' Prioritization based on rules from AHP
+##'
+##' Prioritization based on an integer input layer, reclass rules and
+##' a final weight.  Either the \code{grassReclassRules} or the
+##' \code{grassRecodeRules} have to be specified!
+##'
+##' @usage prioCellAHPSingleGRASS(input, output, grassReclassRules,
+##' grassRecodeRules, oneEquals = 1000, weight, overwrite = FALSE)
+##' @name prioCellAHPSingleGRASS
+##' @title Prioritization based on rules from AHP
+##' @param input name of input layer to be used as the basis of the
+##' AHP prioritization
+##' @param output name of output layer containing the priority values
+##' @param grassReclassRules reclass rules as described in the
+##' r.reclass help (GRASS). The values have to be integer values!
+##' @param grassRecodeRules recode rules as described in the
+##' r.recode help (GRASS).
+##' @param oneEquals value specifying which of the integer values will
+##' equal to one.  All values will be divided by this value.
+##' @param weight final weight of the resulting prioritization.  All
+##' values will be multiplied by this value
+##' @param overwrite if \code{TRUE}, existing output ayer will be overwritte.
+##' 
+##' @return invisible rwturns name of output layer
+##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+prioCellAHPSingleGRASS <- function(
+    input,
+    output,
+    grassReclassRules,
+    grassRecodeRules,
+    oneEquals = 1000,
+    weight,
+    overwrite = FALSE
+    ) {
+    if ( length( execGRASS("g.mlist", type="rast", pattern=output, intern=TRUE) ) & !overwrite ) {
+        stop(paste("Layer", output, "exists! Please specify 'overwrite=TRUE' or use different output name!"))
+    } 
+    if (!missing(grassReclassRules) & !missing(grassRecodeRules)) {
+        stop("Only 'grassReclassRules' or 'grassRecodeRules' can be specified!")
+    }
+    if (missing(grassReclassRules) & missing(grassRecodeRules)) {
+        stop("One of 'grassReclassRules' or 'grassRecodeRules' has to be specified specified!")
+    }
+    execGRASS
     op <- options()
     options(warn=-1)
     execGRASS(
-      "g.remove",
-      rast = outputLayerName
-      )
+        "g.remove",
+        rast = output
+        )
     options(op)
-    rule <- paste( paste( paste(years, collapse=" "), prioValues[1], sep = " = "), "* = ", prioValues[2], sep="\n" )
+    if (!missing(grassReclassRules)) {
+        execGRASS(
+            "r.reclass",
+            input = input,
+            output = output,
+            rules = "-",
+            flags = "overwrite",
+            Sys_input = grassReclassRules
+            )
+    } else {
+        execGRASS(
+            "r.recode",
+            input = input,
+            output = output,
+            rules = "-",
+            flags = "overwrite",
+            Sys_input = grassRecodeRules
+            )
+        oneEquals <- 1
+    }   
     execGRASS(
-      "r.reclass",
-      input = yearLayerName,
-      output = outputLayerName,
-      rules = "-",
-      Sys_input = rule,
-      flags = "overwrite"
-      )
-    execGRASS(
-      "r.mapcalc",
-      expression = paste(outputLayerName, "=", "float(", outputLayerName, " / ", oneEquals * weight, ")") ,
-      flags = "overwrite"
-      )
-    invisible(outputLayerName)
-  }
+        "r.mapcalc",
+        expression = paste(output, "=", "float(", output, " / ", oneEquals * weight, ")") ,
+        flags = "overwrite",
+        )
+    invisible(output)
+}
 #+end_src
 
 #+RESULTS:
 
-** TODO prioCellThreshold
+** CHECK prioCellByValuesGRASS
 Needs to be tested!!!
 :PROPERTIES:
-:tangle:   ./R/prioCellThreshold.R
+:tangle:   ./R/prioCellByValuesGRASS.R
 :comments: yes
 :no-expand: TRUE
 :END:
 #+begin_src R
-  ##' Prioritization based on thresholds of several layers
-  ##'
-  ##' Threshold prioritization based on different layers.
-  ##' Final value for each cell is based on if the cell is in each layer above or below the threshold:
-  ##'   - above, the appropriate value gets added,
-  ##'   - below, nothing gets added
-  ##' 
-  ##' @title 
-  ##' @param inputLayerNames 
-  ##' @param outputLayerName name of output layers containing the priority values 
-  ##' @param layerWeights 
-  ##' @param threshold value above which layer will be prioritized
-  ##' @param weight final weight of the resulting prioritization.
-  ##'               All values will be multiplied by this value
-  ##' 
-  ##' @param keepTmpLayers if TRUE, temporary layers are not deleted
-  ##' @return invisible outputLayerName
-  ##' @author Dr Rainer M Krug
-  prioCellThreshold <- function(
-      inputLayerNames,
-      outputLayerName,
-      layerWeights,
-      threshold,
-      weight,
-      keepTmpLayers = FALSE
-      ) {
-      op <- options()
-      options(warn=-1)
-      execGRASS(
-          "g.remove",
-          rast = outputLayerName
-          )
-      options(op)
-      names(layerWeights) <- inputLayerNames
-      ols <- sapply(
-          layerWeights,
-          function(l) {
-              il <- names(l)
-              ol <- paste0("tmp", il)
-              execGRASS(
-                  "r.recode",
-                  input = il,
-                  output = ol,
-                  rules = "-",
-                  flags = "overwrite",
-                  Sys_input = c(
-                      paste(threshold, "*", l, sep=":"),
-                      paste("*", threshold, 0, sep=":")
-                      )
-                  )
-              returen(ol)
-          }
-          )
-      execGRASS(
-          "r.mapcalc",
-          expression = paste(outputLayerName, "=", paste(ols, collapse=" + ") * weight) ,
-          flags = "overwrite"
-          )
-      if (!keepTmpLayers) {
-          execGRASS(
-              "g.remove",
-              rast=paste(ol, collapse=",")
-              )
-      }
-      invisible(outputLayerName)
-  }
+##' Prioritization based on specific values
+##'
+##' Prioritization based on actual values specified and layer
+##' containing values. If a cell contains a value listed in
+##' \code{values}, the priority value of this cell will be
+##' \code{prioValues\[1\]}, otherwise code{prioValues\[2\]}
+##'
+##' @usage prioCellByValuesGRASS(input, output, values, prioValues, oneEquals = 100,weight, overwrite=FALSE)
+##' @name prioCellByValuesGRASS
+##' @title Prioritization based on specific values
+##' 
+##' @param input name of layer containing input values
+##' @param output name of output layer containing the priority values 
+##' @param values values which should get priority value prioValues[1]
+##' @param prioValues priority values, first one for in \code{values}, second one not
+##' @param oneEquals value specifying which integer values will equal
+##' to one.  All values will be divided by this value.
+##' @param weight final weight of the resulting prioritization.  All
+##' values will be multiplied by this value
+##' @param overwrite if \code{TRUE}, output layer will be overwritten
+##'
+##' @return invisible output
+##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+prioCellByValuesGRASS <- function(
+    input,
+    output,
+    values,
+    prioValues,
+    oneEquals = 100, 
+    weight,
+    overwrite = FALSE
+    ) {
+    if ( length( execGRASS("g.mlist", type="rast", pattern=output, intern=TRUE) ) & !overwrite ) {
+        stop(paste("Layer", output, "exists! Please specify 'overwrite=TRUE' or use different output name!"))
+    } 
+   rule <- paste(
+       paste(
+           paste(values, collapse=" "),
+           prioValues[1], sep = " = "),
+       "* = ", prioValues[2], sep="\n" )
+    execGRASS(
+        "r.reclass",
+        input = input,
+        output = output,
+        rules = "-",
+        Sys_input = rule,
+        flags = "overwrite"
+        )
+    execGRASS(
+        "r.mapcalc",
+        expression = paste(output, "=", "float(", output, " / ", oneEquals * weight, ")") ,
+        flags = "overwrite"
+        )
+    invisible(output)
+}
 #+end_src
 
 #+RESULTS:
+
+** CHECK prioCellThresholdGRASS
+Needs to be tested!!!
+:PROPERTIES:
+:tangle:   ./R/prioCellThresholdGRASS.R
+:comments: yes
+:no-expand: TRUE
+:END:
+#+begin_src R
+##' Prioritization based on thresholds of several layers
+##'
+##' Threshold prioritization based on different layers. The final priority value
+##' for each cell is based on if the cell is in each layer above or
+##' below the threshold.
+##'
+##' For each input layer, a temporary layer is created with the name
+##' \code{tmp_input\[i\]} which is the \code{layerWeight\[i\]} if the value of \code{input\[i\]} is below \code{threshold}, otherwise it is 0.
+##'
+##' These temporary layers will not be deleted if \code{keepTemporaryLayers} is TRUE.
+##'
+##' In a final step, all temporarty layers \code{tmp_input\[i\]} will be added up and saved in \code{output}.
+##'
+##' @usage prioCellThresholdGRASS(input, output, layerWeights,
+##' threshold, weight, keepTmpLayers = FALSE, overwrite = FALSE)
+##' @name prioCellThresholdGRASS
+##' @title Prioritization based on thresholds of several layers
+##' 
+##' @param input name of layer in GRASScontaining input values -
+##' \bold{has to be the same length as \code{layerWeights}}
+##' @param output name of output layers containing the priority values 
+##' @param layerWeights weights for each \code{input} layer -
+##' \bold{has to be the same length as \code{input}}
+##' @param threshold value above which layer will be prioritized
+##' @param weight final weight of the resulting prioritization.  All
+##' values will be multiplied by this value
+##' @param keepTmpLayers if \code{TRUE}, temporal layers will be kept
+##' @param overwrite if \code{TRUE}, the output layer will be overwritten
+##' 
+##' @return invisibly returns output layer name
+##' 
+##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+prioCellThresholdGRASS <- function(
+    input,
+    output,
+    layerWeights,
+    threshold,
+    weight,
+    keepTmpLayers = FALSE,
+    overwrite = FALSE
+    ) {
+    if ( length( execGRASS("g.mlist", type="rast", pattern=output, intern=TRUE) ) & !overwrite ) {
+        stop(paste("Layer", output, "exists! Please specify 'overwrite=TRUE' or use different output name!"))
+    } 
+    op <- options()
+    options(warn=-1)
+    execGRASS(
+        "g.remove",
+        rast = output
+        )
+    options(op)
+    names(layerWeights) <- input
+    ols <- sapply(
+        layerWeights,
+        function(l) {
+            il <- names(l)
+            ol <- paste("tmp", il, sep="_")
+            execGRASS(
+                "r.recode",
+                input = il,
+                output = ol,
+                rules = "-",
+                flags = "overwrite",
+                Sys_input = c(
+                    paste(threshold, "*", l, sep=":"),
+                    paste("*", threshold, 0, sep=":")
+                    )
+                )
+            return(ol)
+        }
+        )
+    execGRASS(
+        "r.mapcalc",
+        expression = paste(
+            output,
+            "=",
+            "(", paste(ols, collapse = " + "), ") * weight)" ,
+            ),
+        flags = "overwrite"
+        )
+    if (!keepTmpLayers) {
+        execGRASS(
+            "g.remove",
+            rast=paste(ols, collapse=",")
+            )
+    }
+    invisible(output)
+}
+#+end_src
 
 
 * TODO Tests
@@ -481,140 +585,6 @@ Write vignette
   CWD=`pwd`
   R CMD check pkg | sed 's/^*/ */'
 #+end_src
-
-#+results:
-#+begin_example
- * using log directory ‘/home/rkrug/Documents/Projects/R-Packages/seeddisp/pkg.Rcheck’
- * using R version 2.13.2 (2011-09-30)
- * using platform: i686-pc-linux-gnu (32-bit)
- * using session charset: UTF-8
- * checking for file ‘DESCRIPTION’ ... OK
- * checking extension type ... Package
- * this is package ‘prioritization’ version ‘0.0-13’
- * checking package namespace information ... OK
- * checking package dependencies ... OK
- * checking if this is a source package ... WARNING
-Subdirectory ‘prioritization/src’ contains object files.
- * checking for executable files ... OK
- * checking whether package ‘prioritization’ can be installed ... OK
- * checking installed package size ... OK
- * checking package directory ... OK
- * checking for portable file names ... OK
- * checking for sufficient/correct file permissions ... OK
- * checking DESCRIPTION meta-information ... OK
- * checking top-level files ... OK
- * checking index information ... OK
- * checking package subdirectories ... WARNING
-Subdirectory 'inst' contains no files.
- * checking R files for non-ASCII characters ... OK
- * checking R files for syntax errors ... OK
- * checking whether the package can be loaded ... OK
- * checking whether the package can be loaded with stated dependencies ... OK
- * checking whether the package can be unloaded cleanly ... OK
- * checking whether the namespace can be loaded with stated dependencies ... OK
- * checking whether the namespace can be unloaded cleanly ... OK
- * checking for unstated dependencies in R code ... OK
- * checking S3 generic/method consistency ... OK
- * checking replacement functions ... OK
- * checking foreign function calls ... OK
- * checking R code for possible problems ... OK
- * checking Rd files ... OK
- * checking Rd metadata ... OK
- * checking Rd cross-references ... OK
- * checking for missing documentation entries ... WARNING
-Undocumented code objects:
-  waterDisp
-All user-level objects in a package should have documentation entries.
-See the chapter 'Writing R documentation files' in the 'Writing R
-Extensions' manual.
- * checking for code/documentation mismatches ... WARNING
-Codoc mismatches from documentation object 'birdDispGRASS':
-birdDispGRASS
-  Code: function(input, output = "birdDispSeeds", zeroToNULL = TRUE,
-                 overwrite = FALSE)
-  Docs: function(input, output, overwrite)
-  Argument names in code not in docs:
-    zeroToNULL
-  Mismatches in argument names:
-    Position: 3 Code: zeroToNULL Docs: overwrite
-  Mismatches in argument default values:
-    Name: 'output' Code: "birdDispSeeds" Docs: 
-    Name: 'overwrite' Code: FALSE Docs: 
-
-Codoc mismatches from documentation object 'localDispGRASS':
-localDispGRASS
-  Code: function(input, output = "localDispSeeds", zeroToNULL = TRUE,
-                 overwrite = FALSE)
-  Docs: function(input, output, overwrite)
-  Argument names in code not in docs:
-    zeroToNULL
-  Mismatches in argument names:
-    Position: 3 Code: zeroToNULL Docs: overwrite
-  Mismatches in argument default values:
-    Name: 'output' Code: "localDispSeeds" Docs: 
-    Name: 'overwrite' Code: FALSE Docs: 
-
-Codoc mismatches from documentation object 'waterDispGRASS':
-waterDispGRASS
-  Code: function(input, output = "waterDispSeeds", slope = "slope",
-                 flowdir = "flowdir", depRates, overwrite = FALSE,
-                 zeroToNULL = TRUE, progress = TRUE)
-  Docs: function(input, output = "waterDispSeeds", slope = "SLOPE",
-                 flowdir = "FLOWDIR", overwrite = FALSE)
-  Argument names in code not in docs:
-    depRates zeroToNULL progress
-  Mismatches in argument names:
-    Position: 5 Code: depRates Docs: overwrite
-  Mismatches in argument default values:
-    Name: 'slope' Code: "slope" Docs: "SLOPE"
-    Name: 'flowdir' Code: "flowdir" Docs: "FLOWDIR"
-
-Codoc mismatches from documentation object 'windDisp':
-windDisp
-  Code: function(SD2D, SEEDS, MASK, zeroToNULL)
-  Docs: function(SD2D, SEEDS, MASK)
-  Argument names in code not in docs:
-    zeroToNULL
-
-Codoc mismatches from documentation object 'windDispGRASS':
-windDisp
-  Code: function(SD2D, SEEDS, MASK, zeroToNULL)
-  Docs: function(SD2D, input, output = "windDispSeeds", overwrite =
-                 FALSE)
-  Argument names in code not in docs:
-    SEEDS MASK zeroToNULL
-  Argument names in docs not in code:
-    input output overwrite
-  Mismatches in argument names:
-    Position: 2 Code: SEEDS Docs: input
-    Position: 3 Code: MASK Docs: output
-    Position: 4 Code: zeroToNULL Docs: overwrite
-
- * checking Rd \usage sections ... WARNING
-Documented arguments not in \usage in documentation object 'waterDispGRASS':
-  depRates
-
-Objects in \usage without \alias in documentation object 'windDispGRASS':
-  windDisp
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See the chapter 'Writing R documentation files' in the 'Writing R
-Extensions' manual.
- * checking Rd contents ... OK
- * checking for unstated dependencies in examples ... OK
- * checking line endings in C/C++/Fortran sources/headers ... OK
- * checking line endings in Makefiles ... OK
- * checking for portable compilation flags in Makevars ... OK
- * checking for portable use of $(BLAS_LIBS) and $(LAPACK_LIBS) ... OK
- * checking examples ... NONE
- * checking PDF version of manual ... OK
-WARNING: There were 5 warnings, see
-  ‘/home/rkrug/Documents/Projects/R-Packages/seeddisp/pkg.Rcheck/00check.log’
-for details
-#+end_example
-
 
 
 ** INSTALL package

@@ -1,2 +1,0 @@
-# useDynLib(prioritization)
-exportPattern("^[[:alpha:]]+")
