@@ -66,8 +66,8 @@ Org-babel support for building
 #+PROPERTY: comments yes
 #+PROPERTY: padline no
 #+PROPERTY: var MAJORVERSION=0
-#+PROPERTY: var+ MINORVERSION=0
-#+PROPERTY: var+ PATCHVERSION=1
+#+PROPERTY: var+ MINORVERSION=1
+#+PROPERTY: var+ PATCHVERSION=0
 #+PROPERTY: var+ GITHASH="testhash" 
 #+PROPERTY: var+ GITCOMMITDATE="testdate"
 :END:
@@ -94,9 +94,9 @@ Org-babel support for building
   sed -i '' s/PATCHVERSION/$PATCHVERSION/ ./DESCRIPTION
   sed -i '' s/TODAYSDATE/`date +%Y-%m-%d_%H-%M`/ ./DESCRIPTION
 
-  sed -i '' s/MAJORVERSION/$MAJORVERSION/ ./prioritization-package.R
-  sed -i '' s/MINORVERSION/$MINORVERSION/ ./prioritization-package.R
-  sed -i '' s/PATCHVERSION/$PATCHVERSION/ ./prioritization-package.R
+  sed -i '' s/MAJORVERSION/$MAJORVERSION/ ./R/package.R
+  sed -i '' s/MINORVERSION/$MINORVERSION/ ./R/package.R
+  sed -i '' s/PATCHVERSION/$PATCHVERSION/ ./R/package.R
   sed -i '' s/TODAYSDATE/`date +%Y-%m-%d_%H-%M`/ ./prioritization-package.R
 
   Rscript -e "library(roxygen2);roxygenize('./', copy.package=FALSE, unlink.target=FALSE)"
@@ -104,9 +104,7 @@ Org-babel support for building
 #+end_src
 
 #+RESULTS:
-: Updating collate directive in  /Users/rainerkrug/Documents/Projects/R-Packages/prioritization/DESCRIPTION 
-: Updating namespace directives
-: Writing prioCellByValuesGRASS.Rd
+: Writing prioritization-package.Rd
 
 
 * gitignore file (./.gitignore)
@@ -189,7 +187,7 @@ Date: TODAYSDATE
 Author: Rainer M. Krug
 Maintainer: Rainer M Krug <Rainer@krugs.de>
 Description: Routines for spatial prioritization for alien clearing
-Depends: spgrass6
+Imports: spgrass6
 License: GPL-3
 LazyLoad: yes
 #+end_src
@@ -233,6 +231,7 @@ exportPattern("^[[:alpha:]]+")
 ##' @name prioritization-package
 ##' @docType package
 ##' @author Rainer M Krug \email{Rainer@@krugs.de}
+##' @import spgrass6
 NULL
 #+end_src
 
@@ -272,6 +271,7 @@ Needs to be tested!!!
 ##'
 ##' @return invisible outputLayerName
 ##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+##' @export
 prioCellRandomGRASS <- function(
     output,
     MASK = NULL,
@@ -351,6 +351,7 @@ Needs to be tested!!!
 ##' 
 ##' @return invisible rwturns name of output layer
 ##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+##' @export
 prioCellAHPSingleGRASS <- function(
     input,
     output,
@@ -439,6 +440,7 @@ Needs to be tested!!!
 ##'
 ##' @return invisible output
 ##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+##' @export
 prioCellByValuesGRASS <- function(
     input,
     output,
@@ -515,6 +517,7 @@ Needs to be tested!!!
 ##' @return invisibly returns output layer name
 ##' 
 ##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+##' @export
 prioCellThresholdGRASS <- function(
     input,
     output,

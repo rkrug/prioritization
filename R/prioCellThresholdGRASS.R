@@ -31,6 +31,7 @@
 ##' @return invisibly returns output layer name
 ##' 
 ##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+##' @export
 prioCellThresholdGRASS <- function(
     input,
     output,
@@ -88,3 +89,9 @@ prioCellThresholdGRASS <- function(
     invisible(output)
 }
 ## prioCellThresholdGRASS:1 ends here
+
+## Local Variables:
+## org-babel-tangled-file: t
+## buffer-read-only: t
+## eval:: (auto-revert-mode)
+## End:

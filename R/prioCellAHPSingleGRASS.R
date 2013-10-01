@@ -24,6 +24,7 @@
 ##' 
 ##' @return invisible rwturns name of output layer
 ##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+##' @export
 prioCellAHPSingleGRASS <- function(
     input,
     output,
@@ -78,3 +79,9 @@ prioCellAHPSingleGRASS <- function(
     invisible(output)
 }
 ## prioCellAHPSingleGRASS:1 ends here
+
+## Local Variables:
+## org-babel-tangled-file: t
+## buffer-read-only: t
+## eval:: (auto-revert-mode)
+## End:

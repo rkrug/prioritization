@@ -22,6 +22,7 @@
 ##'
 ##' @return invisible output
 ##' @author Dr Rainer M Krug \email{Rainer@@krugs.de}
+##' @export
 prioCellByValuesGRASS <- function(
     input,
     output,
@@ -55,3 +56,9 @@ prioCellByValuesGRASS <- function(
     invisible(output)
 }
 ## prioCellByValuesGRASS:1 ends here
+
+## Local Variables:
+## org-babel-tangled-file: t
+## buffer-read-only: t
+## eval:: (auto-revert-mode)
+## End:
